@@ -9,47 +9,44 @@ const images = [
   { url: "https://picsum.photos/id/239/200/300" },
 ];
 
-// Returns a promise that resolves when an image is loaded, rejects on error
+// downloadImage returns a Promise that resolves with an <img> element or rejects with an Error
 function downloadImage(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = url;
-
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error(`Failed to load image at ${url}`));
   });
 }
 
-// Main function to download all images in parallel using Promise.all
 function downloadImages() {
-  // Clear previous results and errors
   output.innerHTML = "";
   errorDiv.textContent = "";
-
-  // Show loading spinner
   loading.style.display = "block";
 
   const imageUrls = images.map(image => image.url);
 
-  // Map each URL to a download promise
-  const downloadPromises = imageUrls.map(downloadImage);
-
-  Promise.all(downloadPromises)
-    .then((downloadedImages) => {
-      // Hide loading spinner
+  Promise.all(imageUrls.map(downloadImage))
+    .then(images => {
       loading.style.display = "none";
-
-      // Append each downloaded image to the output div
-      downloadedImages.forEach(img => output.appendChild(img));
+      images.forEach(img => output.appendChild(img));
     })
-    .catch((err) => {
-      // Hide loading spinner
+    .catch(err => {
       loading.style.display = "none";
-
-      // Show error message
-      errorDiv.textContent = err.message;
+      errorDiv.textContent = err.message; // safe: reading message only
     });
 }
 
-// Attach event listener to the button
+// Safe beforeEach hook - no mutation of error.message
+beforeEach(() => {
+  try {
+    // Your setup code here, for example:
+    // clear the output or reset something if needed
+  } catch (err) {
+    console.error('Error in beforeEach:', err);
+    throw err; // Rethrow original error, do not mutate .message
+  }
+});
+
+// Attach event listener on DOM ready or test setup
 btn.addEventListener("click", downloadImages);
