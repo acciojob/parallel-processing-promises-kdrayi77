@@ -1,52 +1,47 @@
-const output = document.getElementById("output");
-const btn = document.getElementById("download-images-button");
-const loading = document.getElementById("loading");
-const errorDiv = document.getElementById("error");
-
-const images = [
-  { url: "https://picsum.photos/id/237/200/300" },
-  { url: "https://picsum.photos/id/238/200/300" },
-  { url: "https://picsum.photos/id/239/200/300" },
+const imageUrls = [
+  'https://example.com/image1.jpg',
+  'https://example.com/image2.jpg',
+  'https://example.com/image3.jpg'
 ];
 
-// downloadImage returns a Promise that resolves with an <img> element or rejects with an Error
 function downloadImage(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = url;
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`Failed to load image at ${url}`));
+    img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
   });
 }
 
-function downloadImages() {
-  output.innerHTML = "";
-  errorDiv.textContent = "";
-  loading.style.display = "block";
+async function downloadImages(urls) {
+  const loadingDiv = document.getElementById('loading');
+  const outputDiv = document.getElementById('output');
+  const errorDiv = document.getElementById('error');
 
-  const imageUrls = images.map(image => image.url);
+  // Clear previous content
+  outputDiv.innerHTML = '';
+  errorDiv.textContent = '';
 
-  Promise.all(imageUrls.map(downloadImage))
-    .then(images => {
-      loading.style.display = "none";
-      images.forEach(img => output.appendChild(img));
-    })
-    .catch(err => {
-      loading.style.display = "none";
-      errorDiv.textContent = err.message; // safe: reading message only
-    });
+  // Show loading spinner
+  loadingDiv.style.display = 'block';
+
+  try {
+    const imagePromises = urls.map(downloadImage);
+    const images = await Promise.all(imagePromises);
+
+    // Hide loading spinner
+    loadingDiv.style.display = 'none';
+
+    // Display images
+    images.forEach(img => outputDiv.appendChild(img));
+  } catch (error) {
+    // Hide loading spinner
+    loadingDiv.style.display = 'none';
+
+    // Show error message
+    errorDiv.textContent = error.message;
+  }
 }
 
-// Safe beforeEach hook - no mutation of error.message
-beforeEach(() => {
-  try {
-    // Your setup code here, for example:
-    // clear the output or reset something if needed
-  } catch (err) {
-    console.error('Error in beforeEach:', err);
-    throw err; // Rethrow original error, do not mutate .message
-  }
-});
-
-// Attach event listener on DOM ready or test setup
-btn.addEventListener("click", downloadImages);
+// Trigger the download
+downloadImages(imageUrls);
