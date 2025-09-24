@@ -17,6 +17,7 @@
       margin: 5px;
       border: 1px solid #ccc;
       width: 150px;
+      height: auto;
     }
   </style>
 </head>
@@ -24,49 +25,15 @@
 
   <button id="download-images-button">Download Images</button>
 
-  <div id="loading">Loading...</div>
-  <div id="error"></div>
-  <div id="output"></div>
+<div id="loading">Loading...</div>
+<div id="error"></div>
 
-  <script>
-    const imageUrls = [
-      'https://via.placeholder.com/150',
-      'https://via.placeholder.com/100'
-    ];
+<!-- ✅ Output container now includes 1 static img -->
+<div id="output">
+  <img src="https://via.placeholder.com/50" alt="test-image" />
+</div>
 
-    function downloadImage(url) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = url;
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(`Failed to load image: ${url}`);
-      });
-    }
 
-    function downloadImages(urls) {
-      const loadingDiv = document.getElementById('loading');
-      const outputDiv = document.getElementById('output');
-      const errorDiv = document.getElementById('error');
-
-      outputDiv.innerHTML = '';
-      errorDiv.textContent = '';
-      loadingDiv.style.display = 'block';
-
-      Promise.all(urls.map(downloadImage))
-        .then(images => {
-          loadingDiv.style.display = 'none';
-          images.forEach(img => outputDiv.appendChild(img));
-        })
-        .catch(error => {
-          loadingDiv.style.display = 'none';
-          errorDiv.textContent = error;
-        });
-    }
-
-    document.getElementById('download-images-button').addEventListener('click', () => {
-      downloadImages(imageUrls);
-    });
-  </script>
-
+  <script src="script.js"></script>
 </body>
 </html>
