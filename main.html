@@ -21,16 +21,9 @@
   </style>
 </head>
 <body>
-  <!-- ✅ Required by Cypress -->
   <button id="download-images-button">Download Images</button>
-
-  <!-- ✅ Spinner shown during download -->
   <div id="loading" role="status" aria-live="polite">Loading images...</div>
-
-  <!-- ✅ Error message container -->
   <div id="error"></div>
-
-  <!-- ✅ Output container for downloaded images -->
   <div id="output"></div>
 
   <script>
@@ -40,13 +33,22 @@
       'https://via.placeholder.com/250'
     ];
 
-    function downloadImage(url) {
+    function downloadImageWithRetry(url, retries = 2) {
       return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = url;
-        img.alt = "Downloaded image";
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+        const attempt = (remaining) => {
+          const img = new Image();
+          img.src = url;
+          img.alt = "Downloaded image";
+          img.onload = () => resolve(img);
+          img.onerror = () => {
+            if (remaining > 0) {
+              setTimeout(() => attempt(remaining - 1), 1000); // Retry after 1s
+            } else {
+              reject(new Error(`Failed to load image after retries: ${url}`));
+            }
+          };
+        };
+        attempt(retries);
       });
     }
 
@@ -55,32 +57,22 @@
       const outputDiv = document.getElementById('output');
       const errorDiv = document.getElementById('error');
 
-      // Clear previous content
       outputDiv.innerHTML = '';
       errorDiv.textContent = '';
-
-      // Show loading spinner
       loadingDiv.style.display = 'block';
 
       try {
-        const imagePromises = urls.map(downloadImage);
+        const imagePromises = urls.map(url => downloadImageWithRetry(url));
         const images = await Promise.all(imagePromises);
 
-        // Hide loading spinner
         loadingDiv.style.display = 'none';
-
-        // Display images
         images.forEach(img => outputDiv.appendChild(img));
       } catch (error) {
-        // Hide loading spinner
         loadingDiv.style.display = 'none';
-
-        // Show error message
         errorDiv.textContent = error.message;
       }
     }
 
-    // ✅ Attach event listener to button
     document.getElementById('download-images-button').addEventListener('click', () => {
       downloadImages(imageUrls);
     });
