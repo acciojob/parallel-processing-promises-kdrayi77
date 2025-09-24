@@ -21,9 +21,16 @@
   </style>
 </head>
 <body>
+  <!-- ✅ Required by Cypress -->
   <button id="download-images-button">Download Images</button>
+
+  <!-- ✅ Spinner shown during download -->
   <div id="loading" role="status" aria-live="polite">Loading images...</div>
+
+  <!-- ✅ Error message container -->
   <div id="error"></div>
+
+  <!-- ✅ Output container for downloaded images -->
   <div id="output"></div>
 
   <script>
@@ -48,22 +55,32 @@
       const outputDiv = document.getElementById('output');
       const errorDiv = document.getElementById('error');
 
+      // Clear previous content
       outputDiv.innerHTML = '';
       errorDiv.textContent = '';
+
+      // Show loading spinner
       loadingDiv.style.display = 'block';
 
       try {
         const imagePromises = urls.map(downloadImage);
         const images = await Promise.all(imagePromises);
 
+        // Hide loading spinner
         loadingDiv.style.display = 'none';
+
+        // Display images
         images.forEach(img => outputDiv.appendChild(img));
       } catch (error) {
+        // Hide loading spinner
         loadingDiv.style.display = 'none';
+
+        // Show error message
         errorDiv.textContent = error.message;
       }
     }
 
+    // ✅ Attach event listener to button
     document.getElementById('download-images-button').addEventListener('click', () => {
       downloadImages(imageUrls);
     });
